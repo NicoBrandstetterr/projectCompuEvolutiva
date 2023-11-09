@@ -1,0 +1,1 @@
+{"parameters": "parameters/standard.yml", "popsize": 1000, "generations": 50, "elitism": 100, "seed": 791021.0, "prob_crossover": 0.9, "prob_mutation": 0.1, "tsize": 3, "grammar": "grammars/regression.pybnf", "experiment_name": "dumps/example", "run": 1, "include_genotype": true, "save_step": 1, "verbose": true, "min_tree_depth": 5, "max_tree_depth": 17}
