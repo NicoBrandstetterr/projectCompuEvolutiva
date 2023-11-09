@@ -5,7 +5,7 @@
 *.pyc
 dumps/*
 env/
-sge3/
+sge3/sge/dumps/
 # These are some examples of commonly ignored file patterns.
 # You should customize this list as applicable to your project.
 # Learn more about .gitignore:
@@ -55,5 +55,3 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
-
-sge3/
