@@ -53,14 +53,44 @@ def make_initial_population():
 
 
 def evaluate(ind, eval_func):
+    """
+    Evalúa la calidad o aptitud ('fitness') de un individuo basado en una representación genotípica y 
+    una función de evaluación dada.
+
+    El proceso de evaluación implica mapear el genotipo a un fenotipo utilizando una gramática predefinida,
+    y luego evaluar el fenotipo utilizando la función de evaluación proporcionada.
+
+    Args:
+        ind (dict): Un diccionario que representa un individuo en la población. Debe contener al menos
+                    la clave 'genotype', que es una lista que representa la codificación genética del individuo.
+        eval_func (object): Un objeto que tiene un método 'evaluate', el cual toma un fenotipo (una cadena de caracteres
+                            que representa una solución decodificada) y devuelve una medida de calidad y otra información.
+    
+    La función realiza las siguientes tareas:
+    1. Inicializa una lista de valores de mapeo con ceros, uno por cada gen en el genotipo.
+    2. Utiliza la gramática para mapear el genotipo a un fenotipo, obteniendo también la profundidad del árbol
+       generado en el proceso de mapeo.
+    3. Evalúa el fenotipo con la función de evaluación proporcionada, obteniendo la calidad y otra información.
+    4. Almacena el fenotipo, la calidad de la aptitud, la otra información, los valores de mapeo y la profundidad
+       del árbol en el diccionario del individuo para su uso posterior.
+    """
+
+    # Inicializar valores de mapeo para la transformación de genotipo a fenotipo.
     mapping_values = [0 for i in ind['genotype']]
+
+    # Mapear el genotipo a fenotipo usando una gramática y obtener la profundidad del árbol.
     phen, tree_depth = grammar.mapping(ind['genotype'], mapping_values)
+
+    # Evaluar el fenotipo utilizando la función de evaluación para obtener la calidad y otra información relevante.
     quality, other_info = eval_func.evaluate(phen)
-    ind['phenotype'] = phen
-    ind['fitness'] = quality
-    ind['other_info'] = other_info
-    ind['mapping_values'] = mapping_values
-    ind['tree_depth'] = tree_depth
+
+    # Almacenar el fenotipo y la información de evaluación en el individuo.
+    ind['phenotype'] = phen  # Fenotipo resultante.
+    ind['fitness'] = quality  # Calidad o aptitud del fenotipo.
+    ind['other_info'] = other_info  # Otra información proporcionada por la función de evaluación.
+    ind['mapping_values'] = mapping_values  # Valores utilizados en el mapeo genotipo-fenotipo.
+    ind['tree_depth'] = tree_depth  # Profundidad del árbol generada por el mapeo.
+
 
 
 def setup(parameters_file_path = None):
