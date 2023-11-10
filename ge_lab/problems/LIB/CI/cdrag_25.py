@@ -31,7 +31,7 @@ class SymbolicRegression:
 
     def read_fit_cases(self):
         """
-        Lee y procesa los casos de ajuste de los archivos CSV, correspondientes a los datos de coeficiente de arrastre 
+        Lee y procesa los casos de ajuste de los archivos txt, correspondientes a los datos de coeficiente de arrastre 
         para paquetes de baterías con diferente número de celdas. Prepara los datos para el entrenamiento y la validación.
         """
         # Carga y muestreo aleatorio de los datos para un paquete de baterías de 25 celdas
