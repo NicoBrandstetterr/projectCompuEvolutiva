@@ -79,6 +79,7 @@ def make_initial_population():
         yield generate_random_individual()
 
 def evaluate(ind, eval_func, OPTIMIZE=False):
+    print(f'Engine.evaluate: Individuo a evaluar: {ind}')
     inf_info = list(ind.keys())
     phen, tree_depth, other_info, quality, quality_val,opt_const = None, None, None, np.inf, np.inf, []
     if pd.isna(ind['fitness']):
@@ -139,24 +140,30 @@ def f(phenotype, old_constants, fitness_function, OPTIMIZE, queue):
         queue.put(res)
 
 def Get_phtnotype_time(phenotype, old_constants, fitness_function, OPTIMIZE):
-    
-    q = Queue()
-    p = Process(target=f, args=(phenotype, old_constants, fitness_function, OPTIMIZE, q))
-    max_time = 30
-    t0 = time.time()
+    try:
+        q = Queue()
+        p = Process(target=f, args=(phenotype, old_constants, fitness_function, OPTIMIZE, q))
+        max_time = 30
+        t0 = time.time()
 
-    p.start()
-    while time.time() - t0 < max_time:
-        p.join(timeout=1)
-        if not p.is_alive():
-            break
+        p.start()
+        while time.time() - t0 < max_time:
+            p.join(timeout=1)
+            if not p.is_alive():
+                break
 
-    if p.is_alive():
-        #process didn't finish in time so we terminate it
-        p.terminate()
-        replace_phenotype, opt_const = Get_phenotype(phenotype, old_constants, fitness_function, False)
-    else:
-        replace_phenotype, opt_const = q.get()
+        if p.is_alive():
+            #process didn't finish in time so we terminate it
+            p.terminate()
+            replace_phenotype, opt_const = Get_phenotype(phenotype, old_constants, fitness_function, False)
+        else:
+            replace_phenotype, opt_const = q.get()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt detected, terminating the process...")
+        if p.is_alive():
+            p.terminate()
+        raise  # Re-lanza la excepción KeyboardInterrupt
+
     return replace_phenotype, opt_const
 
 def Get_phenotype(phenotype, old_constants, fitness_function, OPTIMIZE):

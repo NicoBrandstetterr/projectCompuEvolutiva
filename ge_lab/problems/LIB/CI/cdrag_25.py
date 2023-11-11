@@ -65,6 +65,7 @@ class SymbolicRegression:
         :return: Error cuadrático medio o un valor de aptitud inválido si la evaluación falla.
         """
         try:
+            print(f'get_error - individuo: {individual}')
             # Evaluar la expresión del individuo en el contexto de los datos de entrada
             Y_pred = list(map(lambda x: eval(individual), dataset))
             # Calcular el error cuadrático medio (MSE) para las predicciones
@@ -91,7 +92,7 @@ class SymbolicRegression:
         """
         if individual is None:
             return self.__invalid_fitness
-        
+        print(f"cdrag.evaluate - se evaluara individuo: {individual}")
         # Calcular el error para cada configuración de paquete de baterías
         error_25 = self.get_error(individual, self.Y_25, self.X_25)
         error_53 = self.get_error(individual, self.Y_53, self.X_53)

@@ -12,8 +12,10 @@ from sge.parameters import (
     set_parameters,
     load_parameters
 )
-
-
+from multiprocessing import Process, Queue
+import time
+import re
+import numpy as np
 def generate_random_individual():
     """
     Genera un individuo aleatorio para la población inicial del algoritmo evolutivo.
@@ -35,8 +37,6 @@ def generate_random_individual():
     # Devolver el individuo como un diccionario con el genotipo, la aptitud aún sin calcular, y la profundidad del árbol.
     return {'genotype': genotype, 'fitness': None, 'tree_depth' : tree_depth}
 
-
-
 def make_initial_population():
     """
     Genera una población inicial para el algoritmo evolutivo.
@@ -50,7 +50,6 @@ def make_initial_population():
     for i in range(params['POPSIZE']):
         # Generar un nuevo individuo aleatoriamente.
         yield generate_random_individual()
-
 
 def evaluate(ind, eval_func):
     """
@@ -74,33 +73,114 @@ def evaluate(ind, eval_func):
     4. Almacena el fenotipo, la calidad de la aptitud, la otra información, los valores de mapeo y la profundidad
        del árbol en el diccionario del individuo para su uso posterior.
     """
-
+    # Se printea individuo a evaluar
+    # print(f'Engine.evaluate: Individuo a evaluar: {ind}')
     # Inicializar valores de mapeo para la transformación de genotipo a fenotipo.
     mapping_values = [0 for i in ind['genotype']]
 
     # Mapear el genotipo a fenotipo usando una gramática y obtener la profundidad del árbol.
-    phen, tree_depth = grammar.mapping(ind['genotype'], mapping_values)
-
+    ind['original_phenotype'], tree_depth = grammar.mapping(ind['genotype'], mapping_values)
+    if "Constant" in ind['original_phenotype']:
+            phen,opt_const = Get_phtnotype_time(ind['original_phenotype'],[],eval_func)
+    else:
+        phen = ind['original_phenotype']
     # Evaluar el fenotipo utilizando la función de evaluación para obtener la calidad y otra información relevante.
-    quality, other_info = eval_func.evaluate(phen)
+    quality, fitness_validation,other_info = eval_func.evaluate(phen)
 
     # Almacenar el fenotipo y la información de evaluación en el individuo.
     ind['phenotype'] = phen  # Fenotipo resultante.
     ind['fitness'] = quality  # Calidad o aptitud del fenotipo.
+    ind['fitness_validation'] = fitness_validation
     ind['other_info'] = other_info  # Otra información proporcionada por la función de evaluación.
     ind['mapping_values'] = mapping_values  # Valores utilizados en el mapeo genotipo-fenotipo.
     ind['tree_depth'] = tree_depth  # Profundidad del árbol generada por el mapeo.
 
+def Get_phtnotype_time(phenotype, old_constants, fitness_function):
+    try:
+        q = Queue()
+        p = Process(target=f, args=(phenotype, old_constants, fitness_function, q))
+        max_time = 30
+        t0 = time.time()
 
+        p.start()
+        while time.time() - t0 < max_time:
+            p.join(timeout=1)
+            if not p.is_alive():
+                break
 
-def setup(parameters_file_path = None):
+        if p.is_alive():
+            #process didn't finish in time so we terminate it
+            p.terminate()
+            replace_phenotype, opt_const = Get_phenotype(phenotype, old_constants, fitness_function, False)
+        else:
+            replace_phenotype, opt_const = q.get()
+    except KeyboardInterrupt:
+        print("KeyboardInterrupt detected, terminating the process...")
+        if p.is_alive():
+            p.terminate()
+        raise  # Re-lanza la excepción KeyboardInterrupt
+    return replace_phenotype, opt_const
+
+def f(phenotype, old_constants, fitness_function, queue):
+        res = Get_phenotype(phenotype, old_constants, fitness_function)
+        queue.put(res)
+
+def Get_phenotype(phenotype, old_constants, fitness_function):
+    p = r"Constant"
+    n_constants = len(re.findall(p, phenotype))
+
+    replace_phenotype = phenotype
+    for i in range(n_constants):
+      replace_phenotype = replace_phenotype.replace('Constant', 'c[' + str(i) + ']',1)
+
+    def eval_ind(c):
+        aux = replace_phenotype
+        for i in range(len(c)):
+            aux = aux.replace('c[' + str(i) + ']', str(c[i]))
+        return fitness_function.evaluate(aux)[0]
+
+    if n_constants>0:
+        if len(old_constants)==0:
+            old_constants = np.random.rand(n_constants)
+        opt_const = old_constants
+        for index in range(n_constants):
+            replace_phenotype = replace_phenotype.replace('c[' + str(index) + ']', str(opt_const[index]))
+    return replace_phenotype, opt_const
+
+def setup(parameters_file_path=None):
+    """
+    Configura el entorno de ejecución para un algoritmo genético basado en la gramática, 
+    estableciendo los parámetros necesarios, inicializando la semilla para la generación
+    de números aleatorios y preparando la gramática.
+
+    Parameters:
+        parameters_file_path (str, opcional): Ruta al archivo de parámetros de configuración. 
+                                              Si se proporciona, carga los parámetros desde este archivo. 
+                                              De lo contrario, los parámetros se toman de los argumentos del sistema.
+
+    Raises:
+        FileNotFoundError: Si se proporciona una ruta al archivo de parámetros y el archivo no existe.
+        ValueError: Si los valores de los parámetros no son del tipo esperado o están fuera de los rangos permitidos.
+        Exception: Para cualquier otro error que pueda ocurrir durante la carga y configuración de parámetros.
+    """
+
+    # Carga los parámetros desde un archivo si se proporciona la ruta.
     if parameters_file_path is not None:
         load_parameters(file_name=parameters_file_path)
+    
+    # Sobreescribe los parámetros con los argumentos de línea de comando si existen.
     set_parameters(sys.argv[1:])
+    
+    # Establece una semilla basada en el microsegundo actual si no se ha definido una.
     if params['SEED'] is None:
         params['SEED'] = int(datetime.now().microsecond)
+    
+    # Prepara la estructura para volcar información durante la ejecución.
     logger.prepare_dumps()
+    
+    # Inicializa la semilla para la generación de números aleatorios.
     random.seed(params['SEED'])
+    # Para el algoritmo SGE, establece la ruta de la gramática, la lee y establece las profundidades máxima y mínima del árbol.
     grammar.set_path(params['GRAMMAR'])
     grammar.read_grammar()
     grammar.set_max_tree_depth(params['MAX_TREE_DEPTH'])
@@ -147,9 +227,10 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
         print(f'Starting generation: {it+1}/{generaciones}')
 
         # Evalúa la aptitud de cada individuo en la población si aún no se ha evaluado.
+        # Referencia a pag 30 donde se evalua un individuo hasta que esté correcto el fitness
         for i in tqdm(population):
             if i['fitness'] is None:
-                evaluate(i, evaluation_function)
+                i = evaluate(i, evaluation_function)
         
         # Ordena la población en función de su aptitud.
         population.sort(key=lambda x: x['fitness'])
@@ -165,6 +246,7 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
             # Decide si realiza un cruzamiento basado en la probabilidad de cruzamiento.
             if random.random() < params['PROB_CROSSOVER']:
                 # Selecciona dos padres mediante torneo.
+                # print('Performing crossover for new individual')
                 p1 = tournament(population, params['TSIZE'])
                 p2 = tournament(population, params['TSIZE'])
                 # Crea un nuevo individuo por cruzamiento.
@@ -172,7 +254,7 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
             else:
                 # Selecciona un individuo mediante torneo para ser clonado y mutado.
                 ni = tournament(population, params['TSIZE'])
-            
+            # print('Performing mutation for new individual')
             # Muta el nuevo individuo basado en la probabilidad de mutación.
             ni = mutate(ni, params['PROB_MUTATION'])
             

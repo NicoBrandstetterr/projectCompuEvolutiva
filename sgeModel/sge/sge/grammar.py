@@ -4,7 +4,11 @@ from sge.utilities import ordered_set
 
 
 class Grammar:
-    """Class that represents a grammar. It works with the prefix notation."""
+    """
+    Esta clase representa una gramática para ser usada en Evolución Gramatical Estructurada (SGE).
+    La gramática trabaja con la notación prefija y permite la generación y mapeo de individuos
+    según las reglas definidas en un archivo de gramática.
+    """
     NT = "NT"
     T = "T"
     NT_PATTERN = "(<.+?>)"
@@ -12,6 +16,9 @@ class Grammar:
     PRODUCTION_SEPARATOR = "|"
 
     def __init__(self):
+        """
+        Inicializa la clase con los valores por defecto para representar una gramática.
+        """
         self.grammar_file = None
         self.grammar = {}
         self.productions_labels = {}
@@ -22,27 +29,49 @@ class Grammar:
         self.start_rule = None
         self.max_depth = None
         self.max_init_depth = None
+        ###########################
         self.shortest_path = {}
 
     def set_path(self, grammar_path):
+        """
+        Define la ruta al archivo de la gramática.
+        :param grammar_path: Ruta del archivo de gramática.
+        """
         self.grammar_file = grammar_path
 
     def get_non_recursive_options(self):
+        """
+        Obtiene las opciones no recursivas de la gramática.
+        :return: Diccionario con las opciones no recursivas.
+        """
         return self.non_recursive_options
 
     def set_min_init_tree_depth(self, min_tree_depth):
+        """
+        Establece la profundidad mínima del árbol al inicializar la gramática.
+        :param min_tree_depth: Profundidad mínima del árbol.
+        """
         self.max_init_depth = min_tree_depth
 
     def set_max_tree_depth(self, max_tree_depth):
+        """
+        Establece la profundidad máxima del árbol para la gramática.
+        :param max_tree_depth: Profundidad máxima del árbol.
+        """
         self.max_depth = max_tree_depth
 
     def get_max_depth(self):
+        """
+        Obtiene la profundidad máxima del árbol de derivación.
+        :return: Profundidad máxima del árbol.
+        """
         return self.max_depth
 
     def read_grammar(self):
         """
-        Reads a Grammar in the BNF format and converts it to a python dictionary
-        This method was adapted from PonyGE version 0.1.3 by Erik Hemberg and James McDermott
+        Lee la gramática desde un archivo en formato BNF y la convierte a un diccionario de Python.
+        El método asume que la primera regla del archivo es el axioma de la gramática.
+        Este método fue adaptado de PonyGE versión 0.1.3 por Erik Hemberg y James McDermott.
         """
         if self.grammar_file is None:
             raise Exception("You need to specify the path of the grammar file")
@@ -80,8 +109,9 @@ class Grammar:
                             temp_productions.append(temp_production)
                         if left_side not in self.grammar:
                             self.grammar[left_side] = temp_productions
-        # self.compute_non_recursive_options()
-        self.find_shortest_path()
+        self.compute_non_recursive_options()
+        ########################################
+        # self.find_shortest_path()
 
     def find_shortest_path(self):
         open_symbols = []
@@ -151,9 +181,15 @@ class Grammar:
 
     def recursive_individual_creation(self, genome, symbol, current_depth):
         if current_depth > self.max_init_depth:
-            possibilities = self.shortest_path[(symbol,'NT')][1:]
-            rule = random.choice(possibilities)
-            expansion_possibility = self.grammar[symbol].index(rule)
+            # possibilities = self.shortest_path[(symbol,'NT')][1:]
+            # rule = random.choice(possibilities)
+            # expansion_possibility = self.grammar[symbol].index(rule)
+            possibilities = [index for index, option in enumerate(self.grammar[symbol])
+                            if not any(s[0] == symbol for s in option)]
+            expansion_possibility = random.choice(possibilities) if possibilities else None
+            if expansion_possibility is None:
+                raise Exception(f"No non-recursive expansion possibilities found for symbol '{symbol}'.")
+
         else:
             expansion_possibility = random.randint(0, self.count_number_of_options_in_production()[symbol] - 1)
 
@@ -166,6 +202,13 @@ class Grammar:
         return max(depths)
 
     def mapping(self, mapping_rules, positions_to_map=None, needs_python_filter=False):
+        """
+        Mapea un conjunto de reglas de mapeo a una representación de individuo.
+        :param mapping_rules: Las reglas de mapeo que se utilizarán para generar el individuo.
+        :param positions_to_map: Posiciones del genoma que se mapearán.
+        :param needs_python_filter: Si se necesita aplicar un filtro para corregir la sintaxis de Python.
+        :return: Una tupla con la representación del individuo y la profundidad máxima del árbol de mapeo.
+        """
         if positions_to_map is None:
             positions_to_map = [0] * len(self.ordered_non_terminals)
         output = []
@@ -184,11 +227,21 @@ class Grammar:
             choices = self.grammar[current_sym[0]]
             size_of_gene = self.count_number_of_options_in_production()
             if positions_to_map[current_sym_pos] >= len(mapping_rules[current_sym_pos]):
+                # if current_depth > self.max_depth:
+                #     # print "True"
+                #     possibilities = self.shortest_path[current_sym][1:]
+                #     rule = random.choice(possibilities)
+                #     expansion_possibility = self.grammar[current_sym[0]].index(rule)
                 if current_depth > self.max_depth:
                     # print "True"
-                    possibilities = self.shortest_path[current_sym][1:]
-                    rule = random.choice(possibilities)
-                    expansion_possibility = self.grammar[current_sym[0]].index(rule)
+                    possibilities = []
+                    for index, option in enumerate(self.grammar[current_sym[0]]):
+                        for s in option:
+                            if s[0] == current_sym[0]:
+                                break
+                        else:
+                            possibilities.append(index)
+                    expansion_possibility = random.choice(possibilities)
                 else:
                     expansion_possibility = random.randint(0, size_of_gene[current_sym[0]] - 1)
                 mapping_rules[current_sym_pos].append(expansion_possibility)

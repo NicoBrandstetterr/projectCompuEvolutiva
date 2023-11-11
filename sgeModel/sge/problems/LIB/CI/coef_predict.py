@@ -19,7 +19,7 @@ class SymbolicRegression:
     Los datos se agrupan por la cantidad de celdas en el paquete de baterías.
     """
     
-    def __init__(self, has_test_set=False, invalid_fitness=9999999):
+    def __init__(self,segment,coef, has_test_set=False, invalid_fitness=9999999):
         """
         Inicializa la clase SymbolicRegression con valores por defecto.
 
@@ -27,32 +27,37 @@ class SymbolicRegression:
         :param invalid_fitness: Valor que se usa para la aptitud cuando la evaluación de un individuo falla.
         """
         self.__invalid_fitness = invalid_fitness
-        self.read_fit_cases()
+        self.read_fit_cases(segment,coef)
 
-    def read_fit_cases(self):
+    def read_fit_cases(self,segment,coef):
         """
         Lee y procesa los casos de ajuste de los archivos txt, correspondientes a los datos de coeficiente de arrastre 
         para paquetes de baterías con diferente número de celdas. Prepara los datos para el entrenamiento y la validación.
         """
         # Carga y muestreo aleatorio de los datos para un paquete de baterías de 25 celdas
-        self.df_25 = pd.read_csv('resources/LIB/CI/df_cdrag_25.txt', sep=',').sample(n=1000, random_state=1)
+        self.df_25 = pd.read_csv(f'resources/LIB/CI/df_{coef}_25_{segment}.txt', sep=',')
+        self.df_25 = self.df_25 if len(self.df_25) < 1000 else self.df_25.sample(n=1000, random_state=1)
         self.X_25 = self.df_25.values[:, :-1]
         self.Y_25 = self.df_25.values[:, -1]
-        
+
         # Carga y muestreo aleatorio de los datos para un paquete de baterías de 53 celdas
-        self.df_53 = pd.read_csv('resources/LIB/CI/df_cdrag_53.txt', sep=',').sample(n=1000, random_state=1)
+        self.df_53 = pd.read_csv(f'resources/LIB/CI/df_{coef}_53_{segment}.txt', sep=',')
+        self.df_53 = self.df_53 if len(self.df_53) < 1000 else self.df_53.sample(n=1000, random_state=1)
         self.X_53 = self.df_53.values[:, :-1]
         self.Y_53 = self.df_53.values[:, -1]
-        
+
         # Carga y muestreo aleatorio de los datos para un paquete de baterías de 74 celdas
-        self.df_74 = pd.read_csv('resources/LIB/CI/df_cdrag_74.txt', sep=',').sample(n=1000, random_state=1)
+        self.df_74 = pd.read_csv(f'resources/LIB/CI/df_{coef}_74_{segment}.txt', sep=',')
+        self.df_74 = self.df_74 if len(self.df_74) < 1000 else self.df_74.sample(n=1000, random_state=1)
         self.X_74 = self.df_74.values[:, :-1]
         self.Y_74 = self.df_74.values[:, -1]
-        
+
         # Carga y muestreo aleatorio de los datos para un paquete de baterías de 102 celdas
-        self.df_102 = pd.read_csv('resources/LIB/CI/df_cdrag_102.txt', sep=',').sample(n=1000, random_state=1)
+        self.df_102 = pd.read_csv(f'resources/LIB/CI/df_{coef}_102_{segment}.txt', sep=',')
+        self.df_102 = self.df_102 if len(self.df_102) < 1000 else self.df_102.sample(n=1000, random_state=1)
         self.X_102 = self.df_102.values[:, :-1]
         self.Y_102 = self.df_102.values[:, -1]
+
 
     def get_error(self, individual, Y_train, dataset):
         """
@@ -93,26 +98,56 @@ class SymbolicRegression:
         """
         if individual is None:
             return self.__invalid_fitness
-        print(f"cdrag.evaluate - se evaluara individuo: {individual}")
-        # Calcular el error para cada configuración de paquete de baterías
-        error_25 = self.get_error(individual, self.Y_25, self.X_25)
-        error_53 = self.get_error(individual, self.Y_53, self.X_53)
-        error_74 = self.get_error(individual, self.Y_74, self.X_74)
-        error_102 = self.get_error(individual, self.Y_102, self.X_102)
+        # print(f"cdrag.evaluate - se evaluara individuo: {individual}")
+        # # Calcular el error para cada configuración de paquete de baterías
+        # error_25 = self.get_error(individual, self.Y_25, self.X_25)
+        # error_53 = self.get_error(individual, self.Y_53, self.X_53)
+        # error_74 = self.get_error(individual, self.Y_74, self.X_74)
+        # error_102 = self.get_error(individual, self.Y_102, self.X_102)
         
-        # Uso del error del conjunto de 25 celdas como aptitud de entrenamiento
-        fitness_train = error_25
-        # Calcular la aptitud promedio para los conjuntos de validación
-        fitness_val = np.mean([error_53, error_74, error_102])
+        # # Uso del error del conjunto de 25 celdas como aptitud de entrenamiento
+        # fitness_train = error_25
+        # # Calcular la aptitud promedio para los conjuntos de validación
+        # fitness_val = np.mean([error_53, error_74, error_102])
         
+
+        # Concatenar los conjuntos X e Y para el entrenamiento
+        X_train = np.concatenate((eval_func.X_25, eval_func.X_74))
+        Y_train = np.concatenate((eval_func.Y_25, eval_func.Y_74))
+
+        # Calcular el error de entrenamiento con los conjuntos combinados
+        error_train = self.get_error(individual, Y_train, X_train)
+
+        # Calcular el error de validación con el conjunto X_102 y Y_102
+        error_validation = self.get_error(individual, eval_func.Y_102, eval_func.X_102)
+
+        # # Calcular el error de prueba con el conjunto X_53 y Y_53
+        # error_test = self.get_error(individual, eval_func.Y_53, eval_func.X_53)
+
+
         # Devolver la aptitud de entrenamiento, de validación y un diccionario detallado
-        return fitness_train, fitness_val, {
-            'fitness 25': error_25,
-            'fitness 53': error_53,
-            'fitness 74': error_74,
-            'fitness 102': error_102
-        }
+        # return error_train, error_validation, {
+        #     'fitness 25': error_25,
+        #     'fitness 53': error_53,
+        #     'fitness 74': error_74,
+        #     'fitness 102': error_102
+        # }
+        return error_train, error_validation, {}
+    
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run SGE algorithm with custom settings.')
+    parser.add_argument('--experiment_name', type=str, required=True, help='Name of the experiment.')
+    parser.add_argument('--parameters', type=str, required=True, help='Path to the parameters file.')
+    parser.add_argument('--algorithm', type=str, required=True, help='Name of the algorithm to use.')
+    parser.add_argument('--seg', type=int, required=False, default=1, help='Segment number for Symbolic Regression.')
+    parser.add_argument('--coef', type=str, required=False, default="cdrag", help='Coefficient for Symbolic Regression.')
+    args = parser.parse_args()
+    return args
+
+
 if __name__ == "__main__":
     import sge
-    eval_func = SymbolicRegression()
+    args = parse_args()
+    eval_func = SymbolicRegression(segment=args.seg,coef=args.coef)
     sge.evolutionary_algorithm(evaluation_function=eval_func)

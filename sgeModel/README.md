@@ -56,6 +56,20 @@ You can run the Symbolic Regression example like this:
 
 
 
+python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag
+python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag
+python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_3 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=3 --coef=cdrag
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_1 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=1 --coef=ff
+python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_2 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=2 --coef=ff
+python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_3 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=3 --coef=ff
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/n_1 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=1 --coef=n
+python -m problems.LIB.CI.coef_predict --experiment_name=results/n_2 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=2 --coef=n
+python -m problems.LIB.CI.coef_predict --experiment_name=results/n_3 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=3 --coef=n
+
+
+
 ### Support
 
 Any questions, comments or suggestion should be directed to Nuno Lourenço ([naml@dei.uc.pt](mailto:naml@dei.uc.pt))
