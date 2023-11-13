@@ -2,7 +2,7 @@ import numpy as np
 from sge.parameters import params
 import json
 import os
-
+import pandas as pd
 
 
 def evolution_progress(generation, pop):
@@ -21,9 +21,8 @@ def save_progress_to_file(data):
 
 
 def save_step(generation, population):
-    c = json.dumps(population)
-    open('%s/run_%d/iteration_%d.json' % (params['EXPERIMENT_NAME'], params['RUN'], generation), 'a').write(c)
-
+    df = pd.DataFrame(population)
+    df.to_csv(f'{params["EXPERIMENT_NAME"]}/run_{params["RUN"]}/iteration_{generation}.csv', index=False)
 
 def save_parameters():
     params_lower = dict((k.lower(), v) for k, v in params.items())

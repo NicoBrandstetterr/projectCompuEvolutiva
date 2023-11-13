@@ -16,6 +16,7 @@ from multiprocessing import Process, Queue
 import time
 import re
 import numpy as np
+import pandas as pd
 def generate_random_individual():
     """
     Genera un individuo aleatorio para la población inicial del algoritmo evolutivo.
@@ -51,7 +52,7 @@ def make_initial_population():
         # Generar un nuevo individuo aleatoriamente.
         yield generate_random_individual()
 
-def evaluate(ind, eval_func):
+def evaluate(ind, eval_func,last_gen):
     """
     Evalúa la calidad o aptitud ('fitness') de un individuo basado en una representación genotípica y 
     una función de evaluación dada.
@@ -85,7 +86,7 @@ def evaluate(ind, eval_func):
     else:
         phen = ind['original_phenotype']
     # Evaluar el fenotipo utilizando la función de evaluación para obtener la calidad y otra información relevante.
-    quality, fitness_validation,other_info = eval_func.evaluate(phen)
+    quality, fitness_validation,other_info = eval_func.evaluate(phen,last_gen)
 
     # Almacenar el fenotipo y la información de evaluación en el individuo.
     ind['phenotype'] = phen  # Fenotipo resultante.
@@ -220,18 +221,28 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
     
     # Inicializa el contador de generaciones.
     it = 0
+    last_gen=False
     # Número total de generaciones a ejecutar.
     generaciones = params['GENERATIONS']
     # Bucle principal del algoritmo evolutivo que se ejecuta por un número predefinido de generaciones.
     while it <= params['GENERATIONS']:
-        print(f'Starting generation: {it+1}/{generaciones}')
-
+        print(f'Starting generation: {it+1}/{generaciones+1}')
+        if it == params['GENERATIONS']:
+            last_gen=True
         # Evalúa la aptitud de cada individuo en la población si aún no se ha evaluado.
         # Referencia a pag 30 donde se evalua un individuo hasta que esté correcto el fitness
         for i in tqdm(population):
             if i['fitness'] is None:
-                i = evaluate(i, evaluation_function)
-        
+                evaluate(i, evaluation_function,last_gen)
+            tries = 0
+            while (i is None) or (i['fitness'] is None) or (i['fitness'] > 10**6):
+                if tries == 5:
+                    break
+                tries+=1
+                print(f"individuo es Nulo o con error muy alto, re generando... intento N°{tries}")
+                # print(f"Individuo: {i}")
+                i = generate_random_individual()
+                evaluate(i, evaluation_function,last_gen)        
         # Ordena la población en función de su aptitud.
         population.sort(key=lambda x: x['fitness'])
 
@@ -257,7 +268,8 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
             # print('Performing mutation for new individual')
             # Muta el nuevo individuo basado en la probabilidad de mutación.
             ni = mutate(ni, params['PROB_MUTATION'])
-            
+            if last_gen:
+                evaluate(ni,evaluation_function,last_gen)
             # Añade el nuevo individuo a la nueva población.
             new_population.append(ni)
         

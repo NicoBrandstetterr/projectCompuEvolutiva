@@ -19,7 +19,7 @@ class SymbolicRegression:
     Los datos se agrupan por la cantidad de celdas en el paquete de baterías.
     """
     
-    def __init__(self,segment,coef, has_test_set=False, invalid_fitness=9999999):
+    def __init__(self,segment,coef, has_test_set=False, invalid_fitness=9999999,path = 'resources/LIB/CI'):
         """
         Inicializa la clase SymbolicRegression con valores por defecto.
 
@@ -27,36 +27,78 @@ class SymbolicRegression:
         :param invalid_fitness: Valor que se usa para la aptitud cuando la evaluación de un individuo falla.
         """
         self.__invalid_fitness = invalid_fitness
-        self.read_fit_cases(segment,coef)
+        self.read_fit_cases(segment,coef,path)
 
-    def read_fit_cases(self,segment,coef):
+    def read_fit_cases(self,segment,coef,path):
         """
         Lee y procesa los casos de ajuste de los archivos txt, correspondientes a los datos de coeficiente de arrastre 
         para paquetes de baterías con diferente número de celdas. Prepara los datos para el entrenamiento y la validación.
         """
-        # Carga y muestreo aleatorio de los datos para un paquete de baterías de 25 celdas
-        self.df_25 = pd.read_csv(f'resources/LIB/CI/df_{coef}_25_{segment}.txt', sep=',')
-        self.df_25 = self.df_25 if len(self.df_25) < 1000 else self.df_25.sample(n=1000, random_state=1)
-        self.X_25 = self.df_25.values[:, :-1]
-        self.Y_25 = self.df_25.values[:, -1]
+        if segment == 0:
+            # Carga de datos para un paquete de baterías de 25 celdas
+            self.df_25 = pd.read_csv(f'{path}/df_{coef}_25.txt', sep=',').sample(n=1000, random_state=1)
 
-        # Carga y muestreo aleatorio de los datos para un paquete de baterías de 53 celdas
-        self.df_53 = pd.read_csv(f'resources/LIB/CI/df_{coef}_53_{segment}.txt', sep=',')
-        self.df_53 = self.df_53 if len(self.df_53) < 1000 else self.df_53.sample(n=1000, random_state=1)
-        self.X_53 = self.df_53.values[:, :-1]
-        self.Y_53 = self.df_53.values[:, -1]
+            # Carga de datos para un paquete de baterías de 74 celdas
+            self.df_74 = pd.read_csv(f'{path}/df_{coef}_74.txt', sep=',').sample(n=1000, random_state=1)
 
-        # Carga y muestreo aleatorio de los datos para un paquete de baterías de 74 celdas
-        self.df_74 = pd.read_csv(f'resources/LIB/CI/df_{coef}_74_{segment}.txt', sep=',')
-        self.df_74 = self.df_74 if len(self.df_74) < 1000 else self.df_74.sample(n=1000, random_state=1)
-        self.X_74 = self.df_74.values[:, :-1]
-        self.Y_74 = self.df_74.values[:, -1]
 
-        # Carga y muestreo aleatorio de los datos para un paquete de baterías de 102 celdas
-        self.df_102 = pd.read_csv(f'resources/LIB/CI/df_{coef}_102_{segment}.txt', sep=',')
-        self.df_102 = self.df_102 if len(self.df_102) < 1000 else self.df_102.sample(n=1000, random_state=1)
-        self.X_102 = self.df_102.values[:, :-1]
-        self.Y_102 = self.df_102.values[:, -1]
+            # Muestreo aleatorio si los tamaños son diferentes
+            if len(self.df_25) != len(self.df_74):
+                # Determinar el tamaño mínimo entre los dos dataframes
+                min_size = min(len(self.df_25), len(self.df_74))
+                self.df_25 = self.df_25.sample(n=min_size, random_state=1)
+                self.df_74 = self.df_74.sample(n=min_size, random_state=1)
+
+            # Asignar valores de X e Y
+            self.X_25 = self.df_25.values[:, :-1]
+            self.Y_25 = self.df_25.values[:, -1]
+            self.X_74 = self.df_74.values[:, :-1]
+            self.Y_74 = self.df_74.values[:, -1]
+
+            # Carga y muestreo aleatorio de los datos para un paquete de baterías de 53 celdas
+            self.df_53 = pd.read_csv(f'{path}/df_{coef}_53.txt', sep=',').sample(n=1000, random_state=1)
+            self.X_53 = self.df_53.values[:, :-1]
+            self.Y_53 = self.df_53.values[:, -1]
+
+            # Carga y muestreo aleatorio de los datos para un paquete de baterías de 102 celdas
+            self.df_102 = pd.read_csv(f'{path}/df_{coef}_102.txt', sep=',').sample(n=1000, random_state=1)
+            self.X_102 = self.df_102.values[:, :-1]
+            self.Y_102 = self.df_102.values[:, -1]
+        else:
+            # Carga de datos para un paquete de baterías de 25 celdas
+            self.df_25 = pd.read_csv(f'{path}/df_{coef}_25_{segment}.txt', sep=',')
+            self.df_25 = self.df_25 if len(self.df_25) < 1000 else self.df_25.sample(n=1000, random_state=1)
+
+            # Carga de datos para un paquete de baterías de 74 celdas
+            self.df_74 = pd.read_csv(f'{path}/df_{coef}_74_{segment}.txt', sep=',')
+            self.df_74 = self.df_74 if len(self.df_74) < 1000 else self.df_74.sample(n=1000, random_state=1)
+
+
+            # Muestreo aleatorio si los tamaños son diferentes
+            if len(self.df_25) != len(self.df_74):
+                # Determinar el tamaño mínimo entre los dos dataframes
+                min_size = min(len(self.df_25), len(self.df_74))
+                self.df_25 = self.df_25.sample(n=min_size, random_state=1)
+                self.df_74 = self.df_74.sample(n=min_size, random_state=1)
+
+            # Asignar valores de X e Y
+            self.X_25 = self.df_25.values[:, :-1]
+            self.Y_25 = self.df_25.values[:, -1]
+            self.X_74 = self.df_74.values[:, :-1]
+            self.Y_74 = self.df_74.values[:, -1]
+
+            # Carga y muestreo aleatorio de los datos para un paquete de baterías de 53 celdas
+            self.df_53 = pd.read_csv(f'{path}/df_{coef}_53_{segment}.txt', sep=',')
+            self.df_53 = self.df_53 if len(self.df_53) < 1000 else self.df_53.sample(n=1000, random_state=1)
+            self.X_53 = self.df_53.values[:, :-1]
+            self.Y_53 = self.df_53.values[:, -1]
+
+
+            # Carga y muestreo aleatorio de los datos para un paquete de baterías de 102 celdas
+            self.df_102 = pd.read_csv(f'{path}/df_{coef}_102_{segment}.txt', sep=',')
+            self.df_102 = self.df_102 if len(self.df_102) < 1000 else self.df_102.sample(n=1000, random_state=1)
+            self.X_102 = self.df_102.values[:, :-1]
+            self.Y_102 = self.df_102.values[:, -1]
 
 
     def get_error(self, individual, Y_train, dataset):
@@ -77,8 +119,8 @@ class SymbolicRegression:
             error = mean_squared_error(Y_train, Y_pred, squared=False)
         except Exception as e:
             # Manejo de errores en la evaluación del individuo
-            print(f"Error evaluating individual: {e}")
-            print(f'individuo que genera error: {individual}')
+            # print(f"Error evaluating individual: {e}")
+            # print(f'individuo que genera error: {individual}')
             error = self.__invalid_fitness
         
         # Asignar un valor de error inválido si el error es None
@@ -87,7 +129,7 @@ class SymbolicRegression:
         
         return error
 
-    def evaluate(self, individual):
+    def evaluate(self, individual,last_gen):
         """
         Evalúa la aptitud de un individuo en varios conjuntos de datos representando diferentes configuraciones de paquetes 
         de baterías y calcula la aptitud general basada en el error de predicción del coeficiente de arrastre.
@@ -120,9 +162,8 @@ class SymbolicRegression:
 
         # Calcular el error de validación con el conjunto X_102 y Y_102
         error_validation = self.get_error(individual, eval_func.Y_102, eval_func.X_102)
-
-        # # Calcular el error de prueba con el conjunto X_53 y Y_53
-        # error_test = self.get_error(individual, eval_func.Y_53, eval_func.X_53)
+        # Calcular el error de prueba con el conjunto X_53 y Y_53
+        error_test = self.get_error(individual, eval_func.Y_53, eval_func.X_53)
 
 
         # Devolver la aptitud de entrenamiento, de validación y un diccionario detallado
@@ -132,7 +173,7 @@ class SymbolicRegression:
         #     'fitness 74': error_74,
         #     'fitness 102': error_102
         # }
-        return error_train, error_validation, {}
+        return error_train, error_validation, {"errortest": error_test,}
     
 
 def parse_args():
@@ -142,6 +183,7 @@ def parse_args():
     parser.add_argument('--algorithm', type=str, required=True, help='Name of the algorithm to use.')
     parser.add_argument('--seg', type=int, required=False, default=1, help='Segment number for Symbolic Regression.')
     parser.add_argument('--coef', type=str, required=False, default="cdrag", help='Coefficient for Symbolic Regression.')
+    parser.add_argument('--choice', type=str, required=False, default="1", help='choice of db.')
     args = parser.parse_args()
     return args
 
@@ -149,5 +191,8 @@ def parse_args():
 if __name__ == "__main__":
     import sge
     args = parse_args()
-    eval_func = SymbolicRegression(segment=args.seg,coef=args.coef)
+    path = 'resources/LIB/CI'
+    if args.choice == "2":
+        path = 'resources/LIB/CI2'
+    eval_func = SymbolicRegression(segment=args.seg,coef=args.coef,path=path)
     sge.evolutionary_algorithm(evaluation_function=eval_func)
