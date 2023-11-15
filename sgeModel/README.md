@@ -66,6 +66,10 @@ python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_3 --param
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_laminar_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=2
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_turbulento_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=2
 
+# caso 3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_inspeccion_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_inspeccion_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=3
+
 
 # caso original
 python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_original --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=0 --coef=ff
@@ -79,6 +83,10 @@ python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_3 --paramete
 python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_laminar_1 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=1 --coef=ff --choice=2
 python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_turbulento_2 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=2 --coef=ff --choice=2
 
+# caso 3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_inspeccion_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/ff_inspeccion_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=3
+
 
 # caso original
 python -m problems.LIB.CI.coef_predict --experiment_name=results/n_original --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=0 --coef=n
@@ -91,6 +99,11 @@ python -m problems.LIB.CI.coef_predict --experiment_name=results/n_3 --parameter
 # caso 2
 python -m problems.LIB.CI.coef_predict --experiment_name=results/n_laminar_1 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=1 --coef=n --choice=2
 python -m problems.LIB.CI.coef_predict --experiment_name=results/n_turbulento_2 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=2 --coef=n --choice=2
+
+# caso 3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/n_inspeccion_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=3
+python -m problems.LIB.CI.coef_predict --experiment_name=results/n_inspeccion_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=3
+
 
 ### Support
 

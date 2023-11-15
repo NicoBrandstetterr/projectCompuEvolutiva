@@ -1,5 +1,5 @@
 POPSIZE: 50
-GENERATIONS: 5
+GENERATIONS: 9
 ELITISM: 10                  # number of individuals that survive
 PROB_CROSSOVER: 0.8
 PROB_MUTATION: 0.1

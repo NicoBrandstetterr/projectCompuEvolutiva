@@ -194,5 +194,7 @@ if __name__ == "__main__":
     path = 'resources/LIB/CI'
     if args.choice == "2":
         path = 'resources/LIB/CI2'
+    if args.choice == "3":
+        path = 'resources/LIB/CI3'
     eval_func = SymbolicRegression(segment=args.seg,coef=args.coef,path=path)
     sge.evolutionary_algorithm(evaluation_function=eval_func)
