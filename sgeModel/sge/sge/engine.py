@@ -188,6 +188,55 @@ def setup(parameters_file_path=None):
     grammar.set_min_init_tree_depth(params['MIN_TREE_DEPTH'])
 
 
+def contains_variables(phenotype):
+    """
+    Verifica si el fenotipo contiene al menos una de las variables requeridas.
+
+    Args:
+        phenotype (str): El fenotipo a verificar.
+
+    Returns:
+        bool: True si contiene al menos una variable, False si solo tiene constantes.
+    """
+    # Lista de variables a buscar en el fenotipo.
+    variables = ["x[0]", "x[1]", "x[2]"]
+    return any(var in phenotype for var in variables)
+
+
+def replace_with_valid_individuals(population, new_population, params):
+    """
+    Reemplaza individuos en new_population que solo contienen constantes con individuos válidos de population.
+
+    Args:
+        population (list): La lista completa de la población de individuos.
+        new_population (list): La lista de la nueva población de individuos seleccionados para elitismo.
+        params (dict): Diccionario de parámetros que contiene 'ELITISM'.
+
+    Returns:
+        list: La nueva población actualizada con todos los individuos válidos.
+    """
+    
+    elite_count = params['ELITISM']
+    # Índice para rastrear el próximo individuo a considerar para reemplazo en la población original.
+    next_index = elite_count
+
+    for i in range(len(new_population)):
+        # bool individuo contiene variables
+        var_ind = contains_variables(new_population[i]['original_phenotype'])
+        
+        if not var_ind:
+            print(f"phenotipo del individuo no contiene variable, se procede a cambiar por otro")
+            # Encuentra el siguiente individuo válido en la población.
+            while next_index < len(population) and not var_ind:
+                next_index += 1
+
+            if next_index < len(population):
+                # Reemplazar el individuo no válido con el próximo válido encontrado.
+                new_population[i] = population[next_index]
+
+    return new_population
+
+
 def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
     """
     Ejecuta un algoritmo evolutivo para optimizar una población de individuos.
@@ -249,9 +298,11 @@ def evolutionary_algorithm(evaluation_function=None, parameters_file=None):
         # Registra el progreso de la evolución.
         logger.evolution_progress(it, population)
         
+        
         # Selecciona la élite de la población para pasar directamente a la siguiente generación.
         new_population = population[:params['ELITISM']]
-        
+        # Asegúrate de que todos los individuos de new_population sean válidos.
+        new_population = replace_with_valid_individuals(population, new_population, params)
         # Completa la nueva población utilizando cruzamiento y mutación.
         while len(new_population) < params['POPSIZE']:
             # Decide si realiza un cruzamiento basado en la probabilidad de cruzamiento.

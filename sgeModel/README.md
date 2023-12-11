@@ -57,6 +57,30 @@ You can run the Symbolic Regression example like this:
 # caso original
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_original --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=0 --coef=cdrag
 
+
+# proposición 1 turbulento vs laminar
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/cdrag_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=2
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/cdrag_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=2
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/ff_1 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=1 --coef=ff --choice=2
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/ff_2 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=2 --coef=ff --choice=2
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/n_1 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=1 --coef=n --choice=2
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop1/n_2 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=2 --coef=n --choice=2
+
+
+# proposición 2 k segun pstree
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/cdrag_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=4
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/cdrag_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=4
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/ff_1 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=1 --coef=ff --choice=4
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/ff_2 --parameters=parameters/LIB/CI/ff.yml --algorithm=SGE --seg=2 --coef=ff --choice=4
+
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/n_1 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=1 --coef=n --choice=4
+python -m problems.LIB.CI.coef_predict --experiment_name=results/prop3/n_2 --parameters=parameters/LIB/CI/n.yml --algorithm=SGE --seg=2 --coef=n --choice=4
+
+
+
 # caso 1
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag
@@ -70,7 +94,7 @@ python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_turbulent
 python -m problems.LIB.CI.coef_predict --experiment_name=results/100ch2/cdrag_laminar_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=2
 python -m problems.LIB.CI.coef_predict --experiment_name=results/100ch2/cdrag_turbulento_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=2
 
-# caso 3
+# caso 3 rem
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_inspeccion_1 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=1 --coef=cdrag --choice=3
 python -m problems.LIB.CI.coef_predict --experiment_name=results/cdrag_inspeccion_2 --parameters=parameters/LIB/CI/cdrag.yml --algorithm=SGE --seg=2 --coef=cdrag --choice=3
 
